@@ -38,6 +38,9 @@ impl Default for UiState {
     }
 }
 
+/// `Ui` holds the source of truth `UiState` for our program.
+/// Downstream updates occur to our `RGB_LEVELS` in order to
+/// stay in sync with this source of truth.
 pub struct Ui {
     knob: Knob,
     _button_a: Button,
@@ -70,7 +73,7 @@ impl Ui {
 				// Assume our frame rate will always stick into u32
 				let prev = (self.state.frame_rate / 10).to_u32().unwrap();
 				// u32 can always fit in u64:
-				self.state.frame_rate = measurement.to_u64().unwrap() * 10;
+				self.state.frame_rate = (measurement.to_u64().unwrap() * 10) + 10;
 				prev
 			},
 			(true, false) => { // BLUE
