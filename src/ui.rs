@@ -71,7 +71,9 @@ impl Ui {
 		let previous_level = match (btn_a_pressed, btn_b_pressed) {
 			(false, false) => { // FRAME_RATE
 				// Assume our frame rate will always stick into u32
-				let prev = (self.state.frame_rate / 10).to_u32().unwrap();
+				let prev = ((self.state.frame_rate - 10) / 10).to_u32().unwrap();
+				// Note: Have to subtract 10 above because of the following + 10 we have
+				// 	to do to match the spec...
 				// u32 can always fit in u64:
 				self.state.frame_rate = (measurement.to_u64().unwrap() * 10) + 10;
 				prev
