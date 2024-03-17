@@ -23,6 +23,8 @@ impl Rgb {
         }
     }
 
+	/// Scan through all rgb pins adjusting wavelength by the
+	/// `level` in our current state corresponding to that pin.
     async fn step(&mut self, led: usize) {
         let level = self.levels[led];
         if level > 0 {
@@ -38,6 +40,9 @@ impl Rgb {
         }
     }
 
+	/// Our main RGB loop: Constantly read current global static
+	/// `RGB_LEVELS` values and scan through our rgb pins
+	/// displaying those values.
     pub async fn run(mut self) -> ! {
         loop {
             self.levels = get_rgb_levels().await;
