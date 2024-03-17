@@ -53,33 +53,35 @@ impl Ui {
         }
     }
 
-	/// Read analog measurement from our `knob` and update `UiState` according to spec.
+	/// Update `UiState`, according to spec, with a `measurement` assumedly pulled from our
+	/// analog input source (knob).
 	/// Note that `Knob::measure` scales our input so it changes in steps up to `LEVELS`.
-	async fn update(&mut self) {
+	fn update(&mut self, measurement: u32) {
 		let btn_a_pressed = self._button_a.is_low();
 		let btn_b_pressed = self._button_b.is_low();
-		let measured_value = self.knob.measure().await;
 		// Update `UiState` based on button state
 		match (btn_a_pressed, btn_b_pressed) {
 			(false, false) => { // FRAME_RATE
 				// u32 can always fit in u64:
-				self.state.frame_rate = measured_value.to_u64().unwrap() * 10 
+				self.state.frame_rate = measurement.to_u64().unwrap() * 10 
 			},
 			(true, false) => { // BLUE
-				self.state.levels[2] = measured_value
+				self.state.levels[2] = measurement
 			},
 			(false, true) => { // GREEN
-				self.state.levels[1] = measured_value
+				self.state.levels[1] = measurement
 			},
 			(true, true) => { // RED
-				self.state.levels[0] = measured_value
+				self.state.levels[0] = measurement
 			}
 		}
 
 	}
 
     pub async fn run(&mut self) -> ! {
-		self.update().await;
+		// Take initial knob state measurement and update UI
+		let level = self.knob.measure().await;
+		self.update(level);
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
         })
