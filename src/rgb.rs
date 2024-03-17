@@ -14,8 +14,8 @@ impl Rgb {
         1_000_000 / (3 * frame_rate * LEVELS as u64)
     }
 
-    pub fn new(rgb: RgbPins, frame_rate: u64) -> Self {
-        let tick_time = Self::frame_tick_time(frame_rate);
+    pub fn new(rgb: RgbPins, initial_frame_rate: u64) -> Self {
+        let tick_time = Self::frame_tick_time(initial_frame_rate);
         Self {
             rgb,
             levels: [0; 3],
@@ -41,11 +41,12 @@ impl Rgb {
     }
 
     /// Our main RGB loop: Constantly read current global static
-    /// `RGB_LEVELS` values and scan through our rgb pins
-    /// displaying those values.
+    /// `RGB_LEVELS` and `FRAME_RATE` values and scan through our
+    /// rgb pins with those updated values.
     pub async fn run(mut self) -> ! {
         loop {
             self.levels = get_rgb_levels().await;
+            self.tick_time = Self::frame_tick_time(get_frame_rate().await);
 
             for led in 0..3 {
                 self.step(led).await;

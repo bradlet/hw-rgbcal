@@ -25,9 +25,11 @@ use microbit_bsp::{
 };
 use num_traits::float::FloatCore;
 
-pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
+const INITIAL_FRAME_RATE: u64 = 50;
 pub const LEVELS: u32 = 16; // count of steps for the various levels in our program
-const FRAME_RATE: u64 = 50; // default frame_rate for the rgb scan
+
+pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
+pub static FRAME_RATE: Mutex<ThreadModeRawMutex, u64> = Mutex::new(INITIAL_FRAME_RATE);
 
 /// Perform a thread-safe read of our 3 RGB levels held in `RGB_LEVELS`
 async fn get_rgb_levels() -> [u32; 3] {
@@ -42,6 +44,20 @@ where
 {
     let mut rgb_levels = RGB_LEVELS.lock().await;
     setter(&mut rgb_levels);
+}
+
+// Note: Essentially same behavior for these two, but used to update global static FRAME_RATE.
+
+async fn get_frame_rate() -> u64 {
+    *(FRAME_RATE.lock().await)
+}
+
+async fn set_frame_rate<F>(setter: F)
+where
+    F: FnOnce(&mut u64),
+{
+    let mut fr = FRAME_RATE.lock().await;
+    setter(&mut fr)
 }
 
 #[embassy_executor::main]
@@ -59,7 +75,7 @@ async fn main(_spawner: Spawner) -> ! {
     let red = led_pin(AnyPin::from(board.p9));
     let green = led_pin(AnyPin::from(board.p8));
     let blue = led_pin(AnyPin::from(board.p16));
-    let rgb: Rgb = Rgb::new([red, green, blue], FRAME_RATE);
+    let rgb: Rgb = Rgb::new([red, green, blue], INITIAL_FRAME_RATE);
 
     // Finish SAADC configuration
     let mut saadc_config = saadc::Config::default();
@@ -71,7 +87,7 @@ async fn main(_spawner: Spawner) -> ! {
         [saadc::ChannelConfig::single_ended(board.p2)],
     );
     let knob = Knob::new(saadc).await;
-    let mut ui = Ui::new(knob, board.btn_a, board.btn_b, FRAME_RATE);
+    let mut ui = Ui::new(knob, board.btn_a, board.btn_b);
 
     // Each component runs its own async main loop -- wait here to catch if both fall off that loop
     join::join(rgb.run(), ui.run()).await;

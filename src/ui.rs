@@ -18,15 +18,6 @@ impl UiState {
         }
         rprintln!("frame rate: {}", self.frame_rate);
     }
-
-    /// Allow a configurable initial frame_rate, though there isn't much value
-    /// here assuming a reading from `knob` is taken ahead of our main UI loop.
-    fn with_frame_rate(frame_rate: u64) -> Self {
-        Self {
-            levels: [LEVELS - 1, LEVELS - 1, LEVELS - 1],
-            frame_rate,
-        }
-    }
 }
 
 impl Default for UiState {
@@ -49,12 +40,12 @@ pub struct Ui {
 }
 
 impl Ui {
-    pub fn new(knob: Knob, _button_a: Button, _button_b: Button, frame_rate: u64) -> Self {
+    pub fn new(knob: Knob, _button_a: Button, _button_b: Button) -> Self {
         Self {
             knob,
             _button_a,
             _button_b,
-            state: UiState::with_frame_rate(frame_rate),
+            state: UiState::default(),
         }
     }
 
@@ -103,14 +94,24 @@ impl Ui {
         previous_level != measurement
     }
 
-    pub async fn run(&mut self) -> ! {
-        // Take initial knob state measurement and update UI
-        let level = self.knob.measure().await;
-        self.update(level);
+    /// Update global statics shared with `Rgb` so that rgb level match
+    /// the logged calibration output.
+    async fn update_rgb(&self) {
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
         })
         .await;
+        set_frame_rate(|fr| {
+            *fr = self.state.frame_rate;
+        })
+        .await;
+    }
+
+    pub async fn run(&mut self) -> ! {
+        // Take initial knob state measurement and update UI
+        let level = self.knob.measure().await;
+        self.update(level);
+        self.update_rgb().await;
         self.state.show();
         loop {
             // At each step: take an analog measurement, check for updates, if the
@@ -120,10 +121,7 @@ impl Ui {
             let updated = self.update(level);
             if updated {
                 self.state.show();
-                set_rgb_levels(|rgb| {
-                    *rgb = self.state.levels;
-                })
-                .await;
+                self.update_rgb().await;
             }
             Timer::after_millis(50).await;
         }

@@ -110,7 +110,7 @@ Figured I was running into a similar issue and checked out the part online
 online much easier!). A quick peak at the red, green, blue and ground pins
 on the light made it clear that I just had to flip the sucker around and:
 Tada! Green to light-blue / tealish-white light! Of course, I re-read
-through the assignment handout and of course the instructions there cover
+through the assignment handout and, of course, the instructions there cover
 this, but it didn't make much sense at the time. I had to be forced to think
 about it a bit more before I understood what I was doing. I am actually
 grateful that I got the wrong part in my kit, because If I hadn't I probably
@@ -125,8 +125,10 @@ well built-out so it made it easy to grasp and iterate on.
 
 Before worrying about updating state correctly, I got the frame rate in sync
 with a const value. Didn't really need to, but figured it would help
-to have those tied together before handling mutability. This is why
-`UiState::with_frame_rate` exists.
+to have those tied together before handling mutability. So, that's why I
+made another constructor `UiState::with_frame_rate`; however, I ended up
+removing this later when I realized that I hadn't configured RGB to take
+in frame rate updates correctly.
 
 Once I had roughly 50% of the code commented, I focused in on the state updates
 in `ui.rs`. It was immediately clear that not a lot needed to change, as all
@@ -149,6 +151,10 @@ Around this time I also repositioned my knob: Originally, since I have the weird
 ganged pot, it was all cattywampus and sidewise. Went ahead and moved it further
 down the board, slightly, to make room, and flipped some of the pin configuration
 so that I could have it face upright.
+
+I proceeded to finish the write-up, start my calibration, and then realized that
+I forgot to make RGB update with the frame rate calibration. Fixed that by 
+emulating the RGB_LEVEL handling.
 
 With all of the development complete, I went ahead and took my calibration
 measurements (Shown at the top of the report).
