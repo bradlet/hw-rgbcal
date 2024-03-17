@@ -78,6 +78,13 @@ to be right now: it can be tuned lower.
 
 ### Calibration Results
 
+```
+red: 13  
+green: 12
+blue: 10       
+frame rate: 60 
+```
+
 ### Write-Up
 To start, as I was getting together the parts needed for the assignment,
 I realized that I was given the wrong pentiometer. After some discussion
@@ -157,7 +164,12 @@ I forgot to make RGB update with the frame rate calibration. Fixed that by
 emulating the RGB_LEVEL handling.
 
 With all of the development complete, I went ahead and took my calibration
-measurements (Shown at the top of the report).
+measurements (Shown at the top of the report). It was kinda hard to determine
+how "white" white was supposed to be. Made more confusing because you can see the
+green and blue coming from the individual pins / diodes... But I am pretty sure
+that it all adds up to a relatively white-looking light! Frame rate didn't
+seem to have too much effect, but the lower value did seem to cut out some
+"blueness" from the hue, so long as I wasn't so low that I was getting blinking.
 
 
 ### Thank you!
