@@ -26,8 +26,8 @@ use microbit_bsp::{
 use num_traits::float::FloatCore;
 
 pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
-pub const LEVELS: u32 = 16;
-const FRAME_RATE: u64 = 50;
+pub const LEVELS: u32 = 16; // count of steps for the various levels in our program
+const FRAME_RATE: u64 = 50; // default frame_rate for the rgb scan
 
 /// Perform a thread-safe read of our 3 RGB levels held in `RGB_LEVELS`
 async fn get_rgb_levels() -> [u32; 3] {
@@ -73,6 +73,7 @@ async fn main(_spawner: Spawner) -> ! {
     let knob = Knob::new(saadc).await;
     let mut ui = Ui::new(knob, board.btn_a, board.btn_b, FRAME_RATE);
 
+	// Each component runs its own async main loop -- wait here to catch if both fall off that loop
     join::join(rgb.run(), ui.run()).await;
 
     panic!("fell off end of main loop");

@@ -1,3 +1,7 @@
+use core::mem;
+
+use num_traits::ToPrimitive;
+
 use crate::*;
 
 struct UiState {
@@ -49,11 +53,33 @@ impl Ui {
         }
     }
 
+	/// Read analog measurement from our `knob` and update `UiState` according to spec.
+	/// Note that `Knob::measure` scales our input so it changes in steps up to `LEVELS`.
+	async fn update(&mut self) {
+		let btn_a_pressed = self._button_a.is_low();
+		let btn_b_pressed = self._button_b.is_low();
+		let measured_value = self.knob.measure().await;
+		// Update `UiState` based on button state
+		match (btn_a_pressed, btn_b_pressed) {
+			(false, false) => { // FRAME_RATE
+				// u32 can always fit in u64:
+				self.state.frame_rate = measured_value.to_u64().unwrap() * 10 
+			},
+			(true, false) => { // BLUE
+				self.state.levels[2] = measured_value
+			},
+			(false, true) => { // GREEN
+				self.state.levels[1] = measured_value
+			},
+			(true, true) => { // RED
+				self.state.levels[0] = measured_value
+			}
+		}
+
+	}
+
     pub async fn run(&mut self) -> ! {
-		// TODO: This currently only adjusts BLUE [Red, Green, *Blue*] <-- levels[2]
-		//  I need to make it so that by default this adjusts framerate instead, and
-		//  then buttons change what it updates.
-        self.state.levels[2] = self.knob.measure().await;
+		self.update().await;
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
         })
