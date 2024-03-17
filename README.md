@@ -61,3 +61,46 @@ will eat CPU for no reason.
 
 I think the frame rate is probably set higher than it needs
 to be right now: it can be tuned lower.
+
+## Report
+To start, as I was getting together the parts needed for the assignment,
+I realized that I was given the wrong pentiometer. After some discussion
+in Zulip and a good deal of Google searching, I was able to find the
+[part that I had online](https://www.aliexpress.us/item/3256805445652896.html?gatewayAdapt=glo2usa4itemAdapt).
+It wasn't clear to me that 'duplex' indicated the knob controlled two sets
+of pins, but Prof. Massey explained in the Zulip chat that 'The "duplex" 
+indicates a ganged pot, which is what [he] suspected. Likely the three leads 
+on the left are connected to the first pot, the three on the right to the 
+second pot, and both pots are controlled by that single knob.' I just bent
+the 3 on the left up so that I could still plug them in. Didn't work.
+
+To be honest, up until this point, I had been following along wiring hardware
+by copying the wiring by example. So I was just following along wiring the
+board without really getting what I was doing. This assignment was the
+first time that it "clicked" for me that the breadboard is essentially
+just room for us to wire some circuits together. Further, the way that
+the dragontail splays out the pins over the first 11 rows on the board
+finally made sense. Actually understanding what I was doing made wiring
+things up much easier; however, the knob wasn't working, so I realized 
+that the mapping for the pins on the knob was probably weird. I recalled
+seeing a pinout diagram of sorts on the above aliexpress product page, and
+used that to find that 3 of the inner pins on the knob actually formed one
+of the sets for a pot. Around this time, I had my "aha" moment with the
+breadboard / dragontail. Plugged those 3 inner pins in, and finally got a 
+knob that was shifting the light from blue to... red.
+
+Figured I was running into a similar issue and checked out the part online
+(my RGB components were the correct ones from our kit, which made finding them
+online much easier!). A quick peak at the red, green, blue and ground pins
+on the light made it clear that I just had to flip the sucker around and:
+Tada! Green to light-blue / tealish-white light! Of course, I re-read 
+through the assignment handout and of course the instructions there cover
+this, but it didn't make much sense at the time. I had to be forced to think
+about it a bit more before I understood what I was doing. I am actually
+grateful that I got the wrong part in my kit, because If I hadn't I probably
+would have just continued to copy wire positioning on the breadboard without
+actually understanding it.
+
+So with everything wired up and working...
+
+
