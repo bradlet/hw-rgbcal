@@ -14,6 +14,13 @@ impl UiState {
         }
         rprintln!("frame rate: {}", self.frame_rate);
     }
+
+	fn with_frame_rate(frame_rate: u64) -> Self {
+		Self {
+            levels: [LEVELS - 1, LEVELS - 1, LEVELS - 1],
+            frame_rate
+		}
+	}
 }
 
 impl Default for UiState {
@@ -33,12 +40,12 @@ pub struct Ui {
 }
 
 impl Ui {
-    pub fn new(knob: Knob, _button_a: Button, _button_b: Button) -> Self {
+    pub fn new(knob: Knob, _button_a: Button, _button_b: Button, frame_rate: u64) -> Self {
         Self {
             knob,
             _button_a,
             _button_b,
-            state: UiState::default(),
+            state: UiState::with_frame_rate(frame_rate),
         }
     }
 

@@ -27,6 +27,7 @@ use num_traits::float::FloatCore;
 
 pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
 pub const LEVELS: u32 = 16;
+const FRAME_RATE: u64 = 2;
 
 async fn get_rgb_levels() -> [u32; 3] {
     let rgb_levels = RGB_LEVELS.lock().await;
@@ -54,7 +55,7 @@ async fn main(_spawner: Spawner) -> ! {
     let red = led_pin(AnyPin::from(board.p9));
     let green = led_pin(AnyPin::from(board.p8));
     let blue = led_pin(AnyPin::from(board.p16));
-    let rgb: Rgb = Rgb::new([red, green, blue], 100);
+    let rgb: Rgb = Rgb::new([red, green, blue], FRAME_RATE);
 
     let mut saadc_config = saadc::Config::default();
     saadc_config.resolution = saadc::Resolution::_14BIT;
@@ -65,7 +66,7 @@ async fn main(_spawner: Spawner) -> ! {
         [saadc::ChannelConfig::single_ended(board.p2)],
     );
     let knob = Knob::new(saadc).await;
-    let mut ui = Ui::new(knob, board.btn_a, board.btn_b);
+    let mut ui = Ui::new(knob, board.btn_a, board.btn_b, FRAME_RATE);
 
     join::join(rgb.run(), ui.run()).await;
 
