@@ -50,6 +50,9 @@ impl Ui {
     }
 
     pub async fn run(&mut self) -> ! {
+		// TODO: This currently only adjusts BLUE [Red, Green, *Blue*] <-- levels[2]
+		//  I need to make it so that by default this adjusts framerate instead, and
+		//  then buttons change what it updates.
         self.state.levels[2] = self.knob.measure().await;
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
