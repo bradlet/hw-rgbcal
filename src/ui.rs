@@ -10,6 +10,8 @@ struct UiState {
 }
 
 impl UiState {
+	/// Printout logs in consol updating current calibration values for the
+	/// benefit of the calibrator.
     fn show(&self) {
         let names = ["red", "green", "blue"];
         rprintln!();
@@ -19,6 +21,8 @@ impl UiState {
         rprintln!("frame rate: {}", self.frame_rate);
     }
 
+	/// Allow a configurable initial frame_rate, though there isn't much value
+	/// here assuming a reading from `knob` is taken ahead of our main UI loop.
 	fn with_frame_rate(frame_rate: u64) -> Self {
 		Self {
             levels: [LEVELS - 1, LEVELS - 1, LEVELS - 1],
@@ -56,26 +60,40 @@ impl Ui {
 	/// Update `UiState`, according to spec, with a `measurement` assumedly pulled from our
 	/// analog input source (knob).
 	/// Note that `Knob::measure` scales our input so it changes in steps up to `LEVELS`.
-	fn update(&mut self, measurement: u32) {
+	/// 
+	/// Returns: a bool indiciating whether a value update occurred.
+	fn update(&mut self, measurement: u32) -> bool {
 		let btn_a_pressed = self._button_a.is_low();
 		let btn_b_pressed = self._button_b.is_low();
-		// Update `UiState` based on button state
-		match (btn_a_pressed, btn_b_pressed) {
+		// Update `UiState` based on button state and return the pre-update
+		// value so we can report back if an actual change in value occurred.
+		let previous_level = match (btn_a_pressed, btn_b_pressed) {
 			(false, false) => { // FRAME_RATE
+				// Assume our frame rate will always stick into u32
+				let prev = (self.state.frame_rate / 10).to_u32().unwrap();
 				// u32 can always fit in u64:
-				self.state.frame_rate = measurement.to_u64().unwrap() * 10 
+				self.state.frame_rate = measurement.to_u64().unwrap() * 10;
+				prev
 			},
 			(true, false) => { // BLUE
-				self.state.levels[2] = measurement
+				let prev = self.state.levels[2];
+				self.state.levels[2] = measurement;
+				prev
 			},
 			(false, true) => { // GREEN
-				self.state.levels[1] = measurement
+				let prev = self.state.levels[1];
+				self.state.levels[1] = measurement;
+				prev
 			},
 			(true, true) => { // RED
-				self.state.levels[0] = measurement
+				let prev = self.state.levels[0];
+				self.state.levels[0] = measurement;
+				prev
 			}
-		}
-
+		};
+		// Return true if the measurement is not the same as the old value, indicating
+		// that an actual update occurred above.
+		previous_level != measurement
 	}
 
     pub async fn run(&mut self) -> ! {
@@ -88,9 +106,12 @@ impl Ui {
         .await;
         self.state.show();
         loop {
+			// At each step: take an analog measurement, check for updates, if the
+			// measurement has changed, update in the UI and then set our global
+			// static RGB_LEVELS state so that the RGB led updates to match the UI.
             let level = self.knob.measure().await;
-            if level != self.state.levels[2] {
-                self.state.levels[2] = level;
+			let updated = self.update(level);
+            if updated {
                 self.state.show();
                 set_rgb_levels(|rgb| {
                     *rgb = self.state.levels;
