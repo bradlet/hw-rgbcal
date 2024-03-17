@@ -49,19 +49,19 @@ async fn main(_spawner: Spawner) -> ! {
     rtt_init_print!();
     let board = Microbit::default();
 
-	// Setup SAADC to receive interrupts measuring change in analog input value (from our knob)
+    // Setup SAADC to receive interrupts measuring change in analog input value (from our knob)
     bind_interrupts!(struct Irqs {
         SAADC => saadc::InterruptHandler;
     });
 
-	// Setup closure used to get consistent `AnyPin` outputs for our rgb led (all three channels) and build those pins.
+    // Setup closure used to get consistent `AnyPin` outputs for our rgb led (all three channels) and build those pins.
     let led_pin = |p| Output::new(p, Level::Low, OutputDrive::Standard);
     let red = led_pin(AnyPin::from(board.p9));
     let green = led_pin(AnyPin::from(board.p8));
     let blue = led_pin(AnyPin::from(board.p16));
     let rgb: Rgb = Rgb::new([red, green, blue], FRAME_RATE);
 
-	// Finish SAADC configuration
+    // Finish SAADC configuration
     let mut saadc_config = saadc::Config::default();
     saadc_config.resolution = saadc::Resolution::_14BIT; // Step size for analog input sensitivity
     let saadc = saadc::Saadc::new(
@@ -73,7 +73,7 @@ async fn main(_spawner: Spawner) -> ! {
     let knob = Knob::new(saadc).await;
     let mut ui = Ui::new(knob, board.btn_a, board.btn_b, FRAME_RATE);
 
-	// Each component runs its own async main loop -- wait here to catch if both fall off that loop
+    // Each component runs its own async main loop -- wait here to catch if both fall off that loop
     join::join(rgb.run(), ui.run()).await;
 
     panic!("fell off end of main loop");

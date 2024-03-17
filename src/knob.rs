@@ -10,9 +10,9 @@ impl Knob {
         Self(adc)
     }
 
-	/// Read in the current value of our knob, thanks to SAADC.
-	/// Clamp to make sure the result value is in expected range
-	/// (based on our const `LEVELS`).
+    /// Read in the current value of our knob, thanks to SAADC.
+    /// Clamp to make sure the result value is in expected range
+    /// (based on our const `LEVELS`).
     pub async fn measure(&mut self) -> u32 {
         let mut buf = [0];
         self.0.sample(&mut buf).await;
